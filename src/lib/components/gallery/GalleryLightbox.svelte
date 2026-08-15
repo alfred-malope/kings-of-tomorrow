@@ -6,10 +6,13 @@
   export let startIndex: number = 0;
   export let isOpen: boolean = false;
 
-  let currentIndex = startIndex;
+  let currentIndex = 0;
 
-  $: if (isOpen && startIndex !== currentIndex) {
-    currentIndex = startIndex;
+  $: if (isOpen) {
+    currentIndex = Math.min(
+      Math.max(startIndex, 0),
+      Math.max(images.length - 1, 0)
+    );
   }
 
   function close() {

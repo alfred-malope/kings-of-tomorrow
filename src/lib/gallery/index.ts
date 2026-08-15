@@ -15,11 +15,14 @@ import type { GalleryAlbum, GalleryImage } from './types';
 // Eagerly import all gallery images so we can enumerate folders and files at build time.
 // `eager: true` returns the resolved modules (with default export = URL string) synchronously.
 // `query: '?url'` ensures we get the asset URL as a string.
-const galleryModules = import.meta.glob<{ default: string }>('./assets/gallery/**/*.+(jpg|jpeg|png|webp|avif)', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-});
+const galleryModules: Record<string, string> = import.meta.glob<string>(
+  '../../assets/gallery/**/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}',
+  {
+    eager: true,
+    query: '?url',
+    import: 'default',
+  }
+);
 
 export interface DiscoveredImage {
   src: string;
@@ -29,17 +32,21 @@ export interface DiscoveredImage {
 
 function discoverImages(): DiscoveredImage[] {
   const results: DiscoveredImage[] = [];
+
   for (const [path, url] of Object.entries(galleryModules)) {
-    // path is like: "./assets/gallery/vs-mamelodi-sundowns/photo-01.jpg"
-    const match = path.match(/\.\/assets\/gallery\/([^/]+)\/(.+)$/);
+    const match = path.match(
+      /(?:\.\.\/)+assets\/gallery\/([^/]+)\/(.+)$/
+    );
+
     if (match) {
       results.push({
-        src: url as unknown as string,
+        src: url,
         folder: match[1],
         filename: match[2],
       });
     }
   }
+
   return results;
 }
 
