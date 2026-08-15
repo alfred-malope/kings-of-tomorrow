@@ -60,7 +60,7 @@
     <!-- Info -->
     <div use:reveal>
       <SectionHeading eyebrow="Club Details" title="Kings Of Tomorrow FC" />
-      <div class="mt-8 space-y-6">
+      <!-- <div class="mt-8 space-y-6">
         <div class="flex items-start gap-4">
           <div class="w-11 h-11 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#00AEEF" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
@@ -91,10 +91,10 @@
             <p class="text-white/50 text-sm mt-1">{club.venue}</p>
           </div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Social links -->
-      <div class="mt-8 pt-8 border-t border-white/10">
+      <!-- <div class="mt-8 pt-8 border-t border-white/10">
         <p class="text-xs uppercase tracking-widest text-white/40 mb-4">Follow K.O.T FC</p>
         <div class="flex gap-3">
           {#each socialLinks as social (social.platform)}
@@ -111,11 +111,11 @@
             </a>
           {/each}
         </div>
-      </div>
+      </div> -->
     </div>
 
     <!-- Form -->
-    <div use:reveal>
+    <!-- <div use:reveal>
       <div class="card-surface p-6 sm:p-8 lg:p-10">
         <h2 class="heading-display text-xl text-white mb-2">Send Us a Message</h2>
         <p class="text-sm text-white/50 mb-6">Fill out the form below and we'll get back to you. This opens your email client.</p>
@@ -172,6 +172,6 @@
           </form>
         {/if}
       </div>
-    </div>
+    </div> -->
   </div>
 </section>

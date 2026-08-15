@@ -101,7 +101,7 @@
 </section>
 
 <!-- News Preview -->
-<section class="py-16 lg:py-24 bg-navy-950/50 border-y border-white/5">
+<!-- <section class="py-16 lg:py-24 bg-navy-950/50 border-y border-white/5">
   <div class="container-x">
     <div class="flex items-end justify-between mb-10 flex-wrap gap-4">
       <div use:reveal>
@@ -119,7 +119,7 @@
       {/each}
     </div>
   </div>
-</section>
+</section> -->
 
 <!-- Gallery Preview -->
 <section class="section-pad">

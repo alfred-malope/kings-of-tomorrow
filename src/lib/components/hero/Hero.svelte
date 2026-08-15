@@ -2,7 +2,7 @@
   import { club } from '../../data/club';
   import { router } from '../../router';
 
-  const heroImage = 'https://images.pexels.com/photos/32190714/pexels-photo-32190714.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop';
+  const heroImage = 'hero.jpeg'; // Replace with the actual path to your hero image
 
   function navigate(path: string) {
     router.navigate(path);

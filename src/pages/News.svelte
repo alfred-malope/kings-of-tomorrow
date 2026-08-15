@@ -9,9 +9,11 @@
   const categories: (NewsCategory | 'All')[] = ['All', 'Match Report', 'Team News', 'Training', 'Club News', 'Announcement'];
   let activeCategory: NewsCategory | 'All' = 'All';
 
-  $: filteredNews = activeCategory === 'All'
-    ? news
-    : news.filter((a) => a.category === activeCategory);
+  // $: filteredNews = activeCategory === 'All'
+  //   ? news
+  //   : news.filter((a) => a.category === activeCategory);
+
+   $: filteredNews = []
 
   const newsHeroImage = 'https://images.pexels.com/photos/32179165/pexels-photo-32179165.jpeg?auto=compress&cs=tinysrgb&w=1920&h=600&fit=crop';
 </script>

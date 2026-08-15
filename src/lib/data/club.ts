@@ -25,7 +25,7 @@ export const club: Club = {
   abbreviation: 'K.O.T',
   founded: 2025,
   motto: 'One Team. One Vision. One Future.',
-  logo: '/kot-logo.svg',
+  logo: '/kot-logo.png',
   monogram: '/kot-monogram.svg',
   location: 'South Africa',
   email: 'info@kotfc.co.za',
@@ -49,11 +49,11 @@ export interface ClubStats {
 }
 
 export const clubStats: ClubStats = {
-  matches: 12,
-  wins: 8,
-  draws: 2,
+  matches: 4,
+  wins: 1,
+  draws: 1,
   losses: 2,
-  goals: 27,
+  goals: 6,
 };
 
 export interface ClubValue {
