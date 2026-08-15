@@ -40,7 +40,7 @@
     <div use:reveal>
       <SectionHeading eyebrow="Our Story" title="The Kings Are Here" />
     </div>
-    <!-- <div class="mt-8 prose prose-invert max-w-none prose-p:text-white/60 prose-headings:text-white" use:reveal>
+    <div class="mt-8 prose prose-invert max-w-none prose-p:text-white/60 prose-headings:text-white" use:reveal>
       <p>
         Kings Of Tomorrow FC was founded in {club.founded} with a singular vision: to build a football club
         that represents ambition, unity, and the relentless pursuit of excellence. Born from a passion for
@@ -58,12 +58,12 @@
         The journey has only just begun, but the vision is clear — to build a club that competes at
         the highest level and inspires the next generation of footballers.
       </p>
-    </div> -->
+    </div>
   </div>
 </section>
 
 <!-- Vision + Mission -->
-<!-- <section class="py-16 lg:py-24 bg-navy-950/50 border-y border-white/5">
+<section class="py-16 lg:py-24 bg-navy-950/50 border-y border-white/5">
   <div class="container-x grid md:grid-cols-2 gap-8 lg:gap-12">
     <div class="card-surface p-8 lg:p-10" use:reveal>
       <Badge variant="blue">Our Vision</Badge>
@@ -86,10 +86,10 @@
       </p>
     </div>
   </div>
-</section> -->
+</section>
 
 <!-- Values -->
-<!-- <section class="section-pad">
+<section class="section-pad">
   <div class="container-x">
     <div use:reveal>
       <SectionHeading eyebrow="Our Values" title="What We Stand For" align="center" />
@@ -108,4 +108,4 @@
       {/each}
     </div>
   </div>
-</section> -->
+</section>

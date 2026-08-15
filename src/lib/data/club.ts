@@ -90,7 +90,7 @@ export const clubValues: ClubValue[] = [
   },
   {
     title: 'Excellence',
-    description: 'We never settle. We strive for excellence in training, in performance, and in character.',
+    description: 'We never settle. We strive for excellence in performance, and in character.',
     icon: 'star',
   },
 ];
