@@ -70,7 +70,7 @@ export const fixtures: Fixture[] = [
     awayTeam: 'K.O.T FC',
     homeLogo: opponentLogo,
     awayLogo: kotLogo,
-    venue: 'K.O.T Stadium',
+    venue: 'Fast 11 Sports Ground',
     status: 'result',
     homeScore: 4,
     awayScore: 2,

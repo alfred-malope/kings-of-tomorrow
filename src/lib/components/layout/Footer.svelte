@@ -77,7 +77,7 @@
           </li>
           <li>{club.phone}</li>
           <li>{club.location}</li>
-          <li>{club.venue}</li>
+          <!-- <li>{club.venue}</li> -->
         </ul>
       </div>
     </div>
@@ -85,7 +85,10 @@
     <!-- Bottom bar -->
     <div class="mt-12 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
       <p class="text-xs text-white/40 text-center sm:text-left">
-        &copy; {year} {club.name}. All rights reserved.
+        &copy; {year} {club.name}. All rights reserved. Website by
+        <a href="https://365itconsultants.co.za/" target="_blank" rel="noreferrer" class="font-semibold text-blue-400 transition-colors hover:text-blue-300">
+          365 IT Consultants
+        </a>
       </p>
       <p class="text-xs text-white/30 uppercase tracking-widest">
         One Team. One Vision. One Future.

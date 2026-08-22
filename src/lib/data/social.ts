@@ -6,18 +6,18 @@ export interface SocialLink {
 }
 
 export const socialLinks: SocialLink[] = [
-  {
-    platform: 'Instagram',
-    handle: '@kotfc',
-    url: 'https://instagram.com/kotfc',
-    icon: 'instagram',
-  },
-  {
-    platform: 'X',
-    handle: '@kotfc',
-    url: 'https://x.com/kotfc',
-    icon: 'x',
-  },
+  // {
+  //   platform: 'Instagram',
+  //   handle: '@kotfc',
+  //   url: 'https://instagram.com/kotfc',
+  //   icon: 'instagram',
+  // },
+  // {
+  //   platform: 'X',
+  //   handle: '@kotfc',
+  //   url: 'https://x.com/kotfc',
+  //   icon: 'x',
+  // },
   {
     platform: 'Facebook',
     handle: 'Kings Of Tomorrow FC',

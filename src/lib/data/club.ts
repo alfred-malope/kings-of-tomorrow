@@ -29,7 +29,7 @@ export const club: Club = {
   monogram: '/kot-monogram.svg',
   location: 'South Africa',
   email: 'info@kotfc.co.za',
-  phone: '+27 11 234 5678',
+  phone: '+27 82 436 8202',
   venue: 'K.O.T Stadium',
   colors: {
     navy: '#071426',

@@ -13,7 +13,7 @@
     ? news
     : news.filter((a) => a.category === activeCategory);
 
-  const newsHeroImage = 'https://images.pexels.com/photos/32179165/pexels-photo-32179165.jpeg?auto=compress&cs=tinysrgb&w=1920&h=600&fit=crop';
+  const newsHeroImage = 'news-hero.jpg';
 </script>
 
 <SEO title="News | K.O.T FC" description="The latest news, match reports, and updates from Kings Of Tomorrow FC." />
@@ -51,7 +51,7 @@
     </div>
 
     <!-- News grid -->
-    <!-- {#if filteredNews.length > 0}
+    {#if filteredNews.length > 0}
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
         {#each filteredNews as article (article.slug)}
           <div use:reveal>
@@ -59,11 +59,11 @@
           </div>
         {/each}
       </div>
-    {:else} -->
+    {:else}
       <div class="card-surface p-12 text-center">
         <p class="heading-display text-lg text-white/70 mb-2">No Articles Found</p>
         <p class="text-sm text-white/40">There are no articles in this category yet. Check back soon.</p>
       </div>
-    <!-- {/if} -->
+    {/if}
   </div>
 </section>
