@@ -14,4 +14,4 @@ export const navItems: NavItem[] = [
 ];
 
 export const ctaLabel = 'Follow K.O.T';
-export const ctaUrl = 'https://instagram.com/kotfc';
+export const ctaUrl = 'https://www.facebook.com/share/14qLbp38FPo/?mibextid=wwXIfr';

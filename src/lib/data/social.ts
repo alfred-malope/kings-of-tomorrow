@@ -21,7 +21,7 @@ export const socialLinks: SocialLink[] = [
   {
     platform: 'Facebook',
     handle: 'Kings Of Tomorrow FC',
-    url: 'https://facebook.com/kotfc',
+    url: 'https://www.facebook.com/share/14qLbp38FPo/?mibextid=wwXIfr',
     icon: 'facebook',
   },
   {
