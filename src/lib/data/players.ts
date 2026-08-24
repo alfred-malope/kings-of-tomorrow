@@ -122,8 +122,8 @@ export const players: Player[] = [
   //   bio: 'Young playmaker with flair and creativity. A rising star in the K.O.T midfield.',
   // },
   {
-    id: 'moloko-makgai',
-    name: 'Moloko Makgai',
+    id: 'moloko-makhae',
+    name: 'Moloko Makhae',
     number: 12,
     position: 'Forward',
     image: 'players/moloko.jpeg',
