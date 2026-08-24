@@ -2,9 +2,24 @@
   import type { Player } from '../../data/players';
 
   export let player: Player;
+  export let onSelect: (player: Player) => void = () => {};
+
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onSelect(player);
+    }
+  }
 </script>
 
-<div class="group relative overflow-hidden rounded-xl bg-navy-800 border border-white/10 hover:border-blue-500/40 transition-all duration-300 cursor-pointer">
+<div
+  class="group relative overflow-hidden rounded-xl bg-navy-800 border border-white/10 hover:border-blue-500/40 transition-all duration-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-navy-900"
+  role="button"
+  tabindex="0"
+  aria-label={`View profile for ${player.name}`}
+  on:click={() => onSelect(player)}
+  on:keydown={handleKeydown}
+>
   <!-- Player image -->
   <div class="relative aspect-[3/4] overflow-hidden">
     <img
