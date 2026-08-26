@@ -3,6 +3,7 @@ export interface Club {
   shortName: string;
   abbreviation: string;
   founded: number;
+  league: string;
   motto: string;
   logo: string;
   monogram: string;
@@ -24,6 +25,7 @@ export const club: Club = {
   shortName: 'K.O.T FC',
   abbreviation: 'K.O.T',
   founded: 2025,
+  league: 'LTP Tournament',
   motto: 'One Team. One Vision. One Future.',
   logo: '/kot-logo.png',
   monogram: '/kot-monogram.svg',

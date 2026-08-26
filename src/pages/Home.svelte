@@ -34,9 +34,36 @@
   function navigate(path: string) {
     router.navigate(path);
   }
+
+  const clubSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'SportsTeam',
+    name: club.name,
+    alternateName: club.shortName,
+    url: 'https://kingsoftomorrowfc.co.za/',
+    logo: 'https://kingsoftomorrowfc.co.za' + club.logo,
+    foundingDate: String(club.founded),
+    sport: 'Football',
+    location: {
+      '@type': 'Place',
+      name: club.location,
+      address: {
+        '@type': 'PostalAddress',
+        addressCountry: 'ZA',
+      },
+    },
+    memberOf: {
+      '@type': 'SportsOrganization',
+      name: club.league,
+    },
+  };
 </script>
 
-<SEO title="Kings Of Tomorrow FC | Official Website" description="Welcome to Kings Of Tomorrow FC — One Team. One Vision. One Future." />
+<SEO
+  title="Kings Of Tomorrow FC | Official Website"
+  description="Welcome to Kings Of Tomorrow FC — One Team. One Vision. One Future."
+  structuredData={clubSchema}
+/>
 
 <!-- Hero -->
 <Hero />

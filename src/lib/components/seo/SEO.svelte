@@ -5,6 +5,7 @@
   export let description: string = club.motto;
   export let image: string = '';
   export let type: string = 'website';
+  export let structuredData: Record<string, unknown> | null = null;
 
   const fullTitle = title.includes(club.shortName) ? title : `${title} | ${club.shortName}`;
   const siteUrl = typeof window !== 'undefined' ? window.location.origin : '';
@@ -29,4 +30,8 @@
   <meta name="twitter:title" content={fullTitle} />
   <meta name="twitter:description" content={description} />
   <meta name="twitter:image" content={ogImage} />
+
+  {#if structuredData}
+    <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+  {/if}
 </svelte:head>
