@@ -3,6 +3,7 @@
   import NewsCard from '../lib/components/news/NewsCard.svelte';
   import Badge from '../lib/components/ui/Badge.svelte';
   import { reveal } from '../lib/actions/reveal';
+  import { club } from '../lib/data/club';
   import { news } from '../lib/data/news';
   import type { NewsCategory } from '../lib/data/news';
 
@@ -16,7 +17,10 @@
   const newsHeroImage = 'news-hero.jpg';
 </script>
 
-<SEO title="News | K.O.T FC" description="The latest news, match reports, and updates from Kings Of Tomorrow FC." />
+<SEO
+  title={`${club.name} News | ${club.league} South Africa`}
+  description={`Read the latest Kings Of Tomorrow FC news, match reports, team updates, and ${club.league} coverage from South Africa.`}
+/>
 
 <!-- Page hero -->
 <section class="relative pt-24 pb-12 lg:pt-32 lg:pb-16 overflow-hidden">

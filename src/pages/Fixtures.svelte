@@ -4,6 +4,7 @@
   import SectionHeading from '../lib/components/ui/SectionHeading.svelte';
   import Badge from '../lib/components/ui/Badge.svelte';
   import { reveal } from '../lib/actions/reveal';
+  import { club } from '../lib/data/club';
   import { fixtures } from '../lib/data/fixtures';
 
   type Tab = 'upcoming' | 'results' | 'all';
@@ -24,7 +25,10 @@
   const fixturesHeroImage = 'https://images.pexels.com/photos/30651230/pexels-photo-30651230.jpeg?auto=compress&cs=tinysrgb&w=1920&h=600&fit=crop';
 </script>
 
-<SEO title="Fixtures & Results | K.O.T FC" description="Upcoming matches, results, and fixtures for Kings Of Tomorrow FC." />
+<SEO
+  title={`${club.name} Fixtures | ${club.league} South Africa`}
+  description={`View Kings Of Tomorrow FC fixtures, upcoming matches, and results from the ${club.league} in South Africa.`}
+/>
 
 <!-- Page hero -->
 <section class="relative pt-24 pb-12 lg:pt-32 lg:pb-16 overflow-hidden">

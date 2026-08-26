@@ -4,6 +4,7 @@
   import SectionHeading from '../lib/components/ui/SectionHeading.svelte';
   import Badge from '../lib/components/ui/Badge.svelte';
   import { reveal } from '../lib/actions/reveal';
+  import { club } from '../lib/data/club';
   import { players, positionGroups } from '../lib/data/players';
   import type { Player, Position } from '../lib/data/players';
 
@@ -23,7 +24,10 @@
 
 <svelte:window on:keydown={closeProfileOnEscape} />
 
-<SEO title="Squad | K.O.T FC" description="Meet the players of Kings Of Tomorrow FC — the Kings of the pitch." />
+<SEO
+  title={`${club.name} Roster | ${club.league} South Africa`}
+  description={`Explore the Kings Of Tomorrow FC roster, player positions, and first-team squad competing in the ${club.league} in South Africa.`}
+/>
 
 <!-- Page hero -->
 <section class="relative pt-24 pb-12 lg:pt-32 lg:pb-16 overflow-hidden">

@@ -7,7 +7,7 @@
   export let type: string = 'website';
   export let structuredData: Record<string, unknown> | null = null;
 
-  const fullTitle = title.includes(club.shortName) ? title : `${title} | ${club.shortName}`;
+  const fullTitle = title.includes(club.shortName) || title.includes(club.name) ? title : `${title} | ${club.shortName}`;
   const siteUrl = typeof window !== 'undefined' ? window.location.origin : '';
   const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
   const ogImage = image || `${siteUrl}${club.logo}`;

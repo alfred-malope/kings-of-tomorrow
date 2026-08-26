@@ -3,12 +3,16 @@
   import GalleryAlbumCard from '../lib/components/gallery/GalleryAlbumCard.svelte';
   import Badge from '../lib/components/ui/Badge.svelte';
   import { reveal } from '../lib/actions/reveal';
+  import { club } from '../lib/data/club';
   import { galleryAlbums } from '../lib/gallery';
 
   const galleryHeroImage = 'https://images.pexels.com/photos/35898730/pexels-photo-35898730.jpeg?auto=compress&cs=tinysrgb&w=1920&h=600&fit=crop';
 </script>
 
-<SEO title="Gallery | K.O.T FC" description="Match photos, training shots, and club moments from Kings Of Tomorrow FC." />
+<SEO
+  title={`${club.name} Gallery | ${club.league} South Africa`}
+  description={`Browse Kings Of Tomorrow FC match photos, training images, and club moments from the ${club.league} season in South Africa.`}
+/>
 
 <!-- Page hero -->
 <section class="relative pt-24 pb-12 lg:pt-32 lg:pb-16 overflow-hidden">
