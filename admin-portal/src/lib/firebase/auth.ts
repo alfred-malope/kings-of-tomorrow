@@ -4,6 +4,7 @@ import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
+  sendPasswordResetEmail,
   type User,
   type UserCredential
 } from 'firebase/auth';
@@ -20,6 +21,13 @@ import type { UserRole } from '$lib/types/firestore.types';
  */
 export function signInWithEmail(email: string, password: string): Promise<UserCredential> {
   return signInWithEmailAndPassword(auth, email, password);
+}
+
+/**
+ * Send a password reset email for the given address.
+ */
+export function resetPassword(email: string): Promise<void> {
+  return sendPasswordResetEmail(auth, email.trim());
 }
 
 /**
