@@ -1,7 +1,7 @@
 [build]
   command = "npm run build"
   publish = "build"
-  
+
 # The catch-all redirect to the SvelteKit Netlify function handler is defined in
 # static/_redirects. adapter-netlify rejects redirect rules in netlify.toml and
 # requires them in a _redirects file.
