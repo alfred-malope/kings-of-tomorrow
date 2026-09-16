@@ -31,6 +31,7 @@ export interface Player {
   bio: string;
   joinedDate: string;                 // ISO date string "YYYY-MM-DD"
   photoUrl: string | null;            // Firebase Storage download URL
+  photoBase64: string | null;         // Inline image data URL for Firestore storage
   createdAt: Timestamp | FieldValue;
   updatedAt: Timestamp | FieldValue;
 }
@@ -82,6 +83,7 @@ export interface NewsArticle {
   status: NewsStatus;
   authorId: string;                   // Firebase Auth UID
   featuredImageUrl: string | null;    // Storage download URL or null
+  featuredImageBase64: string | null; // Inline image data URL for Firestore storage
   publishedAt: Timestamp | FieldValue | null;
   createdAt: Timestamp | FieldValue;
   updatedAt: Timestamp | FieldValue;

@@ -1,19 +1,40 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import SEO from '../lib/components/seo/SEO.svelte';
   import NewsCard from '../lib/components/news/NewsCard.svelte';
   import Badge from '../lib/components/ui/Badge.svelte';
   import Button from '../lib/components/ui/Button.svelte';
   import { reveal } from '../lib/actions/reveal';
-  import { getArticle, getRelatedArticles, formatDateLong } from '../lib/data/news';
+  import { formatDateLong, loadPublicNews, news as fallbackNews } from '../lib/data/news';
+  import type { NewsArticle } from '../lib/data/news';
   import { router } from '../lib/router';
 
   export let slug: string;
 
-  const article = getArticle(slug);
-  const related = article ? getRelatedArticles(slug) : [];
+  let articles: NewsArticle[] = fallbackNews;
+  let loading = true;
+
+  onMount(async () => {
+    try {
+      articles = await loadPublicNews();
+    } catch {
+      // Keep the bundled content available if Firestore is unavailable.
+    } finally {
+      loading = false;
+    }
+  });
+
+  $: article = articles.find((candidate) => candidate.slug === slug);
+  $: related = article
+    ? articles.filter((candidate) => candidate.slug !== slug && candidate.category === article?.category).slice(0, 3)
+    : [];
 </script>
 
-{#if article}
+{#if loading}
+  <section class="min-h-[60vh] flex items-center justify-center pt-24">
+    <p class="text-white/60">Loading article…</p>
+  </section>
+{:else if article}
   <SEO title={article.title} description={article.excerpt} image={article.image} type="article" />
 
   <!-- Article hero -->

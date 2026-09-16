@@ -25,27 +25,27 @@ service cloud.firestore {
     // Write: admin or editor
 
     match /players/{docId} {
-      allow read: if isAnyValidRole();
+      allow read: if isAnyValidRole() || resource.data.status == 'active';
       allow write: if isAdminOrEditor();
     }
     match /fixtures/{docId} {
-      allow read: if isAnyValidRole();
+      allow read: if isAnyValidRole() || resource.data.visibility == 'public';
       allow write: if isAdminOrEditor();
     }
     match /results/{docId} {
-      allow read: if isAnyValidRole();
+      allow read: if isAnyValidRole() || resource.data.visibility == 'public';
       allow write: if isAdminOrEditor();
     }
     match /news/{docId} {
-      allow read: if isAnyValidRole();
+      allow read: if isAnyValidRole() || resource.data.status == 'published';
       allow write: if isAdminOrEditor();
     }
     match /gallery/{albumId} {
-      allow read: if isAnyValidRole();
+      allow read: if isAnyValidRole() || resource.data.visibility == 'public';
       allow write: if isAdminOrEditor();
 
       match /photos/{photoId} {
-        allow read: if isAnyValidRole();
+        allow read: if isAnyValidRole() || get(/databases/$(database)/documents/gallery/$(albumId)).data.visibility == 'public';
         allow write: if isAdminOrEditor();
       }
     }

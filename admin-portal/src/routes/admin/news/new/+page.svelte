@@ -1,8 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { db } from '$lib/firebase/client';
-  import { createNews, updateNews, dateToTimestamp } from '$lib/repositories/news.repository';
-  import { uploadImage } from '$lib/firebase/storage';
+  import { createNews, dateToTimestamp } from '$lib/repositories/news.repository';
   import { toastStore } from '$lib/stores/toast.store.svelte';
   import { authStore } from '$lib/stores/auth.store.svelte';
   import NewsForm, { type NewsFormValues } from '$lib/components/forms/NewsForm.svelte';
@@ -20,15 +19,25 @@
    */
 
   let submitting = $state(false);
-  // Image selected before the article exists — uploaded after create.
+  // Image selected before the article exists — converted before create.
   let pendingImage = $state<File | null>(null);
+
+  function fileToDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error('Unable to read image'));
+      reader.readAsDataURL(file);
+    });
+  }
 
   async function handleSubmit(values: NewsFormValues): Promise<void> {
     if (submitting) return;
     submitting = true;
     try {
       const authorId = authStore.user?.uid ?? '';
-      const id = await createNews(db, {
+      const featuredImageBase64 = pendingImage ? await fileToDataUrl(pendingImage) : null;
+      await createNews(db, {
         title: values.title,
         slug: values.slug,
         excerpt: values.excerpt,
@@ -37,14 +46,9 @@
         status: values.status,
         authorId,
         featuredImageUrl: values.featuredImageUrl ?? null,
+        featuredImageBase64,
         publishedAt: dateToTimestamp(values.publishedAt)
       });
-
-      // If an image was chosen, upload it now that we have the article id (Req 9.5).
-      if (pendingImage) {
-        const url = await uploadImage(`news/${id}/featured`, pendingImage);
-        await updateNews(db, id, { featuredImageUrl: url });
-      }
 
       toastStore.success('Article created.');
       await goto('/admin/news');

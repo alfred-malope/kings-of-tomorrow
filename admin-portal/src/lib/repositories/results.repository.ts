@@ -8,6 +8,7 @@ import {
   updateDoc,
   deleteDoc,
   query,
+  where,
   orderBy,
   limit,
   startAfter,
@@ -76,6 +77,43 @@ export async function getResult(db: Firestore, id: string): Promise<Result | nul
     return { id: snapshot.id, ...snapshot.data() } as Result;
   } catch (err) {
     throw new RepositoryError('Failed to load result', err, 'read');
+  }
+}
+
+/**
+ * Fetches the recorded result for a specific fixture, if one exists.
+ */
+export async function getResultByFixtureId(db: Firestore, fixtureId: string): Promise<Result | null> {
+  try {
+    const snapshot = await getDocs(query(collection(db, COLLECTION), where('fixtureId', '==', fixtureId)));
+    if (snapshot.empty) return null;
+    const docData = snapshot.docs[0];
+    return { id: docData.id, ...docData.data() } as Result;
+  } catch (err) {
+    throw new RepositoryError('Failed to load result for fixture', err, 'read');
+  }
+}
+
+/**
+ * Fetches all recorded results for a set of fixtures and returns them keyed by
+ * fixtureId. This keeps the Fixtures page from making one query per row while
+ * still allowing it to resolve whether a result already exists.
+ */
+export async function getResultsByFixtureIds(
+  db: Firestore,
+  fixtureIds: string[]
+): Promise<Map<string, Result>> {
+  const uniqueFixtureIds = [...new Set(fixtureIds)];
+  if (uniqueFixtureIds.length === 0) return new Map();
+
+  try {
+    const snapshot = await getDocs(query(collection(db, COLLECTION), where('fixtureId', 'in', uniqueFixtureIds)));
+    return new Map(snapshot.docs.map((docSnap) => {
+      const result = { id: docSnap.id, ...docSnap.data() } as Result;
+      return [result.fixtureId, result] as const;
+    }));
+  } catch (err) {
+    throw new RepositoryError('Failed to load results for fixtures', err, 'read');
   }
 }
 

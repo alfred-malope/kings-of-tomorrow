@@ -2,7 +2,9 @@
   import { browser } from '$app/environment';
   import { db } from '$lib/firebase/client';
   import { getFixtures, MAX_PAGE_SIZE, type FixtureFilters } from '$lib/repositories/fixtures.repository';
+  import { getResultsByFixtureIds } from '$lib/repositories/results.repository';
   import type { Fixture, FixtureStatus } from '$lib/types/firestore.types';
+  import { getResultLabel, type ResultLabel } from '$lib/utils/result-label';
   import { authStore } from '$lib/stores/auth.store.svelte';
   import DataTable from '$lib/components/ui/DataTable.svelte';
   import Pagination from '$lib/components/ui/Pagination.svelte';
@@ -17,7 +19,7 @@
    *
    * Renders fixtures in tabbed views — Upcoming (scheduled), Completed, TBC,
    * Cancelled, and All (no filter). Selecting a tab queries fixtures filtered
-   * by the corresponding `status`, ordered by `date` ascending (Req 7.1, 7.2).
+  * by the corresponding `status`, ordered by `date` descending (Req 7.1, 7.2).
    * Pagination is cursor-based via the repository's `lastDoc` cursor, mirroring
    * the Players page: we keep a stack of the cursors that started each page so
    * we can step backwards as well as forwards (Req 7.8). Loading, empty, and
@@ -31,18 +33,19 @@
   // ── Tab definitions ──
   type Tab = { id: string; label: string; status?: FixtureStatus };
   const tabs: Tab[] = [
+    { id: 'all', label: 'All' },
     { id: 'upcoming', label: 'Upcoming', status: 'scheduled' },
     { id: 'completed', label: 'Completed', status: 'completed' },
     { id: 'tbc', label: 'TBC', status: 'tbc' },
-    { id: 'cancelled', label: 'Cancelled', status: 'cancelled' },
-    { id: 'all', label: 'All' }
+    { id: 'cancelled', label: 'Cancelled', status: 'cancelled' }
   ];
 
-  let activeTab = $state<string>('upcoming');
+  let activeTab = $state<string>('all');
   const currentTab = $derived(tabs.find((t) => t.id === activeTab) ?? tabs[0]);
 
   // ── Data / UI state ──
   let fixtures = $state<Fixture[]>([]);
+  let fixtureResults = $state<Map<string, { id: string; homeScore: number; awayScore: number; homePenaltyScore: number | null; awayPenaltyScore: number | null }>>(new Map());
   let loading = $state(true);
   let errored = $state(false);
 
@@ -67,11 +70,19 @@
     try {
       const result = await getFixtures(db, currentFilters(), MAX_PAGE_SIZE, cursor);
       fixtures = result.fixtures;
+      const fixtureIds = fixtures.map((fixture) => fixture.id);
+      try {
+        fixtureResults = await getResultsByFixtureIds(db, fixtureIds);
+      } catch {
+        // Result enrichment must not prevent the fixture list from loading.
+        fixtureResults = new Map();
+      }
       lastDoc = result.lastDoc;
       fullPage = result.lastDoc !== null;
     } catch {
       errored = true;
       fixtures = [];
+      fixtureResults = new Map();
     } finally {
       loading = false;
     }
@@ -127,8 +138,19 @@
     time: string;
     venue: string;
     status: FixtureStatus;
+    resultId?: string;
+    scoreText?: string;
+    resultLabel?: ResultLabel;
     [key: string]: unknown;
   };
+
+  function formatResultSummary(result: { homeScore: number; awayScore: number; homePenaltyScore: number | null; awayPenaltyScore: number | null }): string {
+    const base = `${result.homeScore}–${result.awayScore}`;
+    if (typeof result.homePenaltyScore === 'number' && typeof result.awayPenaltyScore === 'number') {
+      return `${base} (${result.homePenaltyScore}–${result.awayPenaltyScore} pens)`;
+    }
+    return base;
+  }
 
   const rows = $derived<FixtureRow[]>(
     fixtures.map((f) => ({
@@ -139,7 +161,21 @@
       date: f.date,
       time: f.time,
       venue: f.venue,
-      status: f.status
+      status: f.status,
+      resultId: fixtureResults.get(f.id)?.id,
+      scoreText: fixtureResults.has(f.id)
+        ? formatResultSummary(fixtureResults.get(f.id)!)
+        : undefined,
+      resultLabel: fixtureResults.has(f.id)
+        ? getResultLabel(
+            f.homeTeam,
+            f.awayTeam,
+            fixtureResults.get(f.id)!.homeScore,
+            fixtureResults.get(f.id)!.awayScore,
+            fixtureResults.get(f.id)!.homePenaltyScore,
+            fixtureResults.get(f.id)!.awayPenaltyScore
+          )
+        : undefined
     }))
   );
 
@@ -165,6 +201,12 @@
       default:
         return 'bg-silver-400/15 text-silver-200';
     }
+  }
+
+  function resultClasses(label: ResultLabel): string {
+    if (label === 'Win') return 'bg-green-500/15 text-green-400';
+    if (label === 'Loss') return 'bg-red-500/15 text-red-400';
+    return 'bg-silver-400/15 text-silver-200';
   }
 
   /** Human-friendly date/time, showing "TBC" verbatim. */
@@ -248,7 +290,21 @@
             {row.status}
           </span>
         {:else if key === 'actions'}
-          {#if canWrite && row.status === 'completed'}
+          {#if row.resultId && row.scoreText && row.resultLabel}
+            {#if canWrite}
+              <a
+                href={`/admin/results/${row.resultId}`}
+                class="inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold {resultClasses(row.resultLabel)} hover:brightness-125"
+                aria-label={`Edit ${row.homeTeam} vs ${row.awayTeam} result: ${row.scoreText}`}
+              >
+                {row.scoreText}
+              </a>
+            {:else}
+              <span class="inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold {resultClasses(row.resultLabel)}">
+                {row.scoreText}
+              </span>
+            {/if}
+          {:else if canWrite && row.status === 'completed'}
             <a
               href={`/admin/results/new?fixtureId=${row.id}`}
               class="whitespace-nowrap text-sm font-semibold text-gold-400 hover:text-gold-500"

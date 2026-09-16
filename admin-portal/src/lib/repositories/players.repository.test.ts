@@ -50,6 +50,7 @@ const playerArb: fc.Arbitrary<Player> = fc.record({
   bio: fc.string(),
   joinedDate: fc.constant('2024-01-01'),
   photoUrl: fc.constant(null),
+  photoBase64: fc.constant(null),
   createdAt: fc.constant({} as never),
   updatedAt: fc.constant({} as never)
 });
@@ -178,7 +179,8 @@ describe('players repository — properties', () => {
       status: 'active' as PlayerStatus,
       bio: '',
       joinedDate: '2024-01-01',
-      photoUrl: null
+      photoUrl: null,
+      photoBase64: null
     };
     await expect(createPlayer({} as never, input)).rejects.toBeInstanceOf(RepositoryError);
     await expect(createPlayer({} as never, input)).rejects.toMatchObject({ operation: 'create' });

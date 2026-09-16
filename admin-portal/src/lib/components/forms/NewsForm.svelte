@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { NewsArticle, NewsCategory, NewsStatus } from '$lib/types/firestore.types';
-  import ImageUpload from '$lib/components/ui/ImageUpload.svelte';
   import { slugify } from '$lib/utils/slug';
 
   /**
@@ -36,20 +35,19 @@
     /** ISO-ish `datetime-local` string, or empty when not set. */
     publishedAt: string;
     featuredImageUrl: string | null;
+    featuredImageBase64: string | null;
   };
 
   interface Props {
     /** Existing article to pre-populate the form for editing. */
     initial?: Partial<NewsArticle> | null;
-    /** News document id — required to enable the featured image upload field. */
+    /** News document id, retained for edit-page compatibility. */
     id?: string | null;
     /** Whether a submit is currently in flight (disables the submit button). */
     submitting?: boolean;
     /** Called with the validated form values when the form is submitted. */
     onSubmit: (values: NewsFormValues) => void;
-    /** Called with the download URL when a featured image finishes uploading (edit mode). */
-    onImageUpload?: (url: string) => void;
-    /** Called with the selected, validated File in create mode (deferred upload). */
+    /** Called with the selected, validated image file. */
     onImageSelect?: (file: File | null) => void;
     /** Label for the submit button. */
     submitLabel?: string;
@@ -62,7 +60,6 @@
     id = null,
     submitting = false,
     onSubmit,
-    onImageUpload,
     onImageSelect,
     submitLabel = 'Save Article',
     initialPublishedAt = ''
@@ -90,6 +87,7 @@
   // svelte-ignore state_referenced_locally
   let publishedAt = $state(initialPublishedAt);
   let featuredImageUrl = $state<string | null>(seed?.featuredImageUrl ?? null);
+  let featuredImageBase64 = $state<string | null>(seed?.featuredImageBase64 ?? null);
 
   // Tracks whether the user has manually edited the slug. Once true, the slug
   // is preserved and title changes stop regenerating it (Req 9.4). When editing
@@ -122,7 +120,7 @@
       return;
     }
     const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    const maxBytes = 10 * 1024 * 1024;
+    const maxBytes = 700 * 1024;
     if (!validTypes.includes(file.type)) {
       imageError = 'Image must be a JPEG, PNG, or WebP file.';
       input.value = '';
@@ -130,7 +128,7 @@
       return;
     }
     if (file.size > maxBytes) {
-      imageError = 'Image must be 10MB or smaller.';
+      imageError = 'Image must be 700KB or smaller so it fits in Firestore.';
       input.value = '';
       onImageSelect?.(null);
       return;
@@ -158,13 +156,9 @@
       category,
       status,
       publishedAt: publishedAt.trim(),
-      featuredImageUrl
+      featuredImageUrl,
+      featuredImageBase64
     });
-  }
-
-  function handleImageUpload(url: string) {
-    featuredImageUrl = url;
-    onImageUpload?.(url);
   }
 
   const fieldClass =
@@ -238,28 +232,22 @@
   </div>
 
   <!-- Featured image -->
-  {#if id}
-    <ImageUpload
-      label="Featured Image"
-      storagePath={`news/${id}/featured`}
-      currentUrl={featuredImageUrl}
-      onUpload={handleImageUpload}
+  <div class="space-y-2">
+    <span class="text-eyebrow block">Featured Image</span>
+    <input
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      onchange={handleImageSelect}
+      class="block w-full cursor-pointer rounded-lg border border-white/20 bg-navy-800/60 text-sm text-white/80 file:mr-4 file:cursor-pointer file:border-0 file:bg-blue-500 file:px-4 file:py-2 file:text-sm file:font-bold file:uppercase file:tracking-wider file:text-navy-950 hover:file:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-navy-900"
     />
-  {:else}
-    <div class="space-y-2">
-      <span class="text-eyebrow block">Featured Image</span>
-      <input
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        onchange={handleImageSelect}
-        class="block w-full cursor-pointer rounded-lg border border-white/20 bg-navy-800/60 text-sm text-white/80 file:mr-4 file:cursor-pointer file:border-0 file:bg-blue-500 file:px-4 file:py-2 file:text-sm file:font-bold file:uppercase file:tracking-wider file:text-navy-950 hover:file:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-navy-900"
-      />
-      <p class="text-xs text-white/50">The image will be uploaded after the article is created.</p>
-      {#if imageError}
-        <p class="text-sm text-red-400" role="alert">{imageError}</p>
-      {/if}
-    </div>
-  {/if}
+    <p class="text-xs text-white/50">JPEG, PNG, or WebP up to 700KB. Images are stored directly in the article record.</p>
+    {#if featuredImageBase64 || featuredImageUrl}
+      <p class="text-xs text-green-400">Featured image saved.</p>
+    {/if}
+    {#if imageError}
+      <p class="text-sm text-red-400" role="alert">{imageError}</p>
+    {/if}
+  </div>
 
   <div class="flex justify-end gap-3">
     <a href="/admin/news" class="btn-outline">Cancel</a>

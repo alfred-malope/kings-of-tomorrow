@@ -1,3 +1,6 @@
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { firestore } from '../firebase';
+
 export type NewsCategory =
   | 'Match Report'
   | 'Team News'
@@ -182,10 +185,60 @@ export function getRelatedArticles(slug: string, limit = 3): NewsArticle[] {
 }
 
 export function formatDateLong(dateStr: string): string {
+  if (dateStr === 'TBC') return 'Date TBC';
   const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('en-GB', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
   });
+}
+
+type AdminNewsArticle = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  authorId?: string;
+  featuredImageUrl?: string | null;
+  featuredImageBase64?: string | null;
+  publishedAt?: { toDate?: () => Date } | string | null;
+};
+
+function formatPublishedDate(value: AdminNewsArticle['publishedAt']): string {
+  if (value && typeof value === 'object' && value.toDate) {
+    return value.toDate().toISOString().slice(0, 10);
+  }
+  if (typeof value === 'string' && value !== '') return value.slice(0, 10);
+  return new Date().toISOString().slice(0, 10);
+}
+
+function mapNewsArticle(article: AdminNewsArticle): NewsArticle {
+  const content = article.content
+    .split(/\n\s*\n/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
+  const image = article.featuredImageBase64 || article.featuredImageUrl || '/news/news-hero.jpg';
+
+  return {
+    slug: article.slug,
+    title: article.title,
+    excerpt: article.excerpt,
+    category: article.category === 'Tournament Announcement' ? 'Announcement' : article.category as NewsCategory,
+    date: formatPublishedDate(article.publishedAt),
+    image,
+    content,
+    author: 'K.O.T Media Team',
+    readTime: Math.max(1, Math.ceil(article.content.split(/\s+/).length / 200)),
+  };
+}
+
+/** Loads published public news articles managed in the admin portal. */
+export async function loadPublicNews(): Promise<NewsArticle[]> {
+  const snapshot = await getDocs(query(collection(firestore, 'news'), where('status', '==', 'published')));
+  return snapshot.docs
+    .map((articleDoc) => mapNewsArticle({ id: articleDoc.id, ...articleDoc.data() } as AdminNewsArticle))
+    .sort((left, right) => right.date.localeCompare(left.date));
 }

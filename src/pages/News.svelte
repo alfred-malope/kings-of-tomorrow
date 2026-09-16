@@ -4,11 +4,18 @@
   import Badge from '../lib/components/ui/Badge.svelte';
   import { reveal } from '../lib/actions/reveal';
   import { club } from '../lib/data/club';
-  import { news } from '../lib/data/news';
+  import { loadPublicNews, news as fallbackNews } from '../lib/data/news';
   import type { NewsCategory } from '../lib/data/news';
 
   const categories: (NewsCategory | 'All')[] = ['All', 'Match Report', 'Team News', 'Training', 'Club News', 'Announcement'];
   let activeCategory: NewsCategory | 'All' = 'All';
+  let news = fallbackNews;
+  let loading = true;
+
+  loadPublicNews()
+    .then((loadedNews) => { news = loadedNews; })
+    .catch(() => {})
+    .finally(() => { loading = false; });
 
   $: filteredNews = activeCategory === 'All'
     ? news
@@ -55,7 +62,12 @@
     </div>
 
     <!-- News grid -->
-    {#if filteredNews.length > 0}
+    {#if loading}
+      <div class="card-surface p-12 text-center">
+        <p class="heading-display text-lg text-white/70 mb-2">Loading News</p>
+        <p class="text-sm text-white/40">Fetching the latest club updates.</p>
+      </div>
+    {:else if filteredNews.length > 0}
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
         {#each filteredNews as article (article.slug)}
           <div use:reveal>

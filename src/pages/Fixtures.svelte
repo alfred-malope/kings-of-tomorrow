@@ -5,10 +5,24 @@
   import Badge from '../lib/components/ui/Badge.svelte';
   import { reveal } from '../lib/actions/reveal';
   import { club } from '../lib/data/club';
-  import { fixtures } from '../lib/data/fixtures';
+  import { fixtures as fallbackFixtures, loadPublicFixtures, type Fixture } from '../lib/data/fixtures';
 
   type Tab = 'upcoming' | 'results' | 'all';
   let activeTab: Tab = 'upcoming';
+  let fixtures: Fixture[] = fallbackFixtures;
+  let loading = true;
+  let loadError = false;
+
+  loadPublicFixtures()
+    .then((loadedFixtures) => {
+      fixtures = loadedFixtures;
+    })
+    .catch(() => {
+      loadError = true;
+    })
+    .finally(() => {
+      loading = false;
+    });
 
   $: filteredFixtures = activeTab === 'all'
     ? [...fixtures].sort((a, b) => b.date.localeCompare(a.date))
@@ -65,7 +79,17 @@
     </div>
 
     <!-- Fixture list -->
-    {#if filteredFixtures.length > 0}
+    {#if loading}
+      <div class="card-surface p-12 text-center">
+        <p class="heading-display text-lg text-white/70 mb-2">Loading Fixtures</p>
+        <p class="text-sm text-white/40">Fetching the latest match information.</p>
+      </div>
+    {:else if loadError && fixtures === fallbackFixtures}
+      <div class="card-surface p-12 text-center">
+        <p class="heading-display text-lg text-white/70 mb-2">Fixtures unavailable</p>
+        <p class="text-sm text-white/40">Please check back shortly.</p>
+      </div>
+    {:else if filteredFixtures.length > 0}
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
         {#each filteredFixtures as fixture (fixture.id)}
           <div use:reveal>

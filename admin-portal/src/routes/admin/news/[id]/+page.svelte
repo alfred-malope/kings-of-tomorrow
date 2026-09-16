@@ -9,7 +9,6 @@
     deleteNews,
     dateToTimestamp
   } from '$lib/repositories/news.repository';
-  import { deleteImage } from '$lib/firebase/storage';
   import { toastStore } from '$lib/stores/toast.store.svelte';
   import { authStore } from '$lib/stores/auth.store.svelte';
   import type { NewsArticle } from '$lib/types/firestore.types';
@@ -43,6 +42,16 @@
   let submitting = $state(false);
   let deleting = $state(false);
   let showConfirm = $state(false);
+  let pendingImage = $state<File | null>(null);
+
+  function fileToDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error('Unable to read image'));
+      reader.readAsDataURL(file);
+    });
+  }
 
   /**
    * Converts a Firestore timestamp-like `publishedAt` value into the string
@@ -98,6 +107,7 @@
     if (submitting) return;
     submitting = true;
     try {
+      const featuredImageBase64 = pendingImage ? await fileToDataUrl(pendingImage) : article?.featuredImageBase64 ?? null;
       await updateNews(db, articleId, {
         title: values.title,
         slug: values.slug,
@@ -106,6 +116,7 @@
         category: values.category,
         status: values.status,
         featuredImageUrl: values.featuredImageUrl ?? null,
+        featuredImageBase64,
         // Pass an explicit publishedAt only when the user set one; leaving it
         // undefined lets the repository auto-stamp on first publish (Req 9.7).
         ...(values.publishedAt.trim() === ''
@@ -121,36 +132,13 @@
     }
   }
 
-  /** When a featured image finishes uploading in edit mode, persist it immediately. */
-  async function handleImageUpload(url: string): Promise<void> {
-    try {
-      await updateNews(db, articleId, { featuredImageUrl: url });
-      if (article) article = { ...article, featuredImageUrl: url };
-      toastStore.success('Featured image saved.');
-    } catch {
-      toastStore.error('Failed to save the image. Please try again.');
-    }
-  }
-
   async function confirmDelete(): Promise<void> {
     showConfirm = false;
     if (deleting) return;
     deleting = true;
-    const hadImage = Boolean(article?.featuredImageUrl);
     try {
       // Delete the document first.
       await deleteNews(db, articleId);
-      // Then attempt to delete the Storage image. A failure here must NOT
-      // restore the document — we only surface an error toast.
-      if (hadImage) {
-        try {
-          await deleteImage(`news/${articleId}/featured`);
-        } catch {
-          toastStore.error('Article deleted, but its image could not be removed from storage.');
-          await goto('/admin/news');
-          return;
-        }
-      }
       toastStore.success('Article deleted.');
       await goto('/admin/news');
     } catch {
@@ -193,7 +181,7 @@
       {initialPublishedAt}
       {submitting}
       onSubmit={handleSubmit}
-      onImageUpload={(url) => void handleImageUpload(url)}
+      onImageSelect={(file) => (pendingImage = file)}
       submitLabel="Save Changes"
     />
   {:else if article}

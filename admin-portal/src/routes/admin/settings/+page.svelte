@@ -181,7 +181,7 @@
 
           <div>
             <label for="contactEmail" class="mb-1.5 block text-sm font-medium text-white/70">Contact Email</label>
-            <input id="contactEmail" type="email" class={fieldClass} bind:value={contactEmail} disabled={submitting} placeholder="info@kotfc.co.za" />
+            <input id="contactEmail" type="email" class={fieldClass} bind:value={contactEmail} disabled={submitting} placeholder="info@kingsoftomorrowfc.co.za" />
           </div>
 
           <div class="flex justify-end border-t border-white/5 pt-5">

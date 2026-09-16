@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { Player, PlayerStatus, Position } from '$lib/types/firestore.types';
-  import ImageUpload from '$lib/components/ui/ImageUpload.svelte';
   import { validateUpload } from '$lib/utils/validation';
 
   /**
@@ -31,20 +30,19 @@
     bio: string;
     joinedDate: string;
     photoUrl: string | null;
+    photoBase64: string | null;
   };
 
   interface Props {
     /** Existing player to pre-populate the form for editing. */
     initial?: Partial<Player> | null;
-    /** Player document id — required to enable the photo upload field. */
+    /** Player document id, retained for edit-page compatibility. */
     id?: string | null;
     /** Whether a submit is currently in flight (disables the submit button). */
     submitting?: boolean;
     /** Called with the validated form values when the form is submitted. */
     onSubmit: (values: PlayerFormValues) => void;
-    /** Called with the download URL when a photo finishes uploading (edit mode). */
-    onPhotoUpload?: (url: string) => void;
-    /** Called with the selected, validated File in create mode (deferred upload). */
+    /** Called with the selected, validated image file. */
     onPhotoSelect?: (file: File | null) => void;
     /** Label for the submit button. */
     submitLabel?: string;
@@ -55,7 +53,6 @@
     id = null,
     submitting = false,
     onSubmit,
-    onPhotoUpload,
     onPhotoSelect,
     submitLabel = 'Save Player'
   }: Props = $props();
@@ -74,6 +71,12 @@
     const result = validateUpload(file);
     if (!result.valid) {
       photoError = result.reason;
+      input.value = '';
+      onPhotoSelect?.(null);
+      return;
+    }
+    if (file.size > 700 * 1024) {
+      photoError = 'Photo must be 700KB or smaller so it fits in Firestore.';
       input.value = '';
       onPhotoSelect?.(null);
       return;
@@ -100,6 +103,7 @@
   let bio = $state(seed?.bio ?? '');
   let joinedDate = $state(seed?.joinedDate ?? '');
   let photoUrl = $state<string | null>(seed?.photoUrl ?? null);
+  let photoBase64 = $state<string | null>(seed?.photoBase64 ?? null);
 
   // Per-field validation errors, shown inline (Req 6.4).
   let errors = $state<Record<string, string>>({});
@@ -132,13 +136,9 @@
       status,
       bio: bio.trim(),
       joinedDate,
-      photoUrl
+      photoUrl,
+      photoBase64
     });
-  }
-
-  function handlePhotoUpload(url: string) {
-    photoUrl = url;
-    onPhotoUpload?.(url);
   }
 
   const fieldClass =
@@ -226,28 +226,22 @@
   </div>
 
   <!-- Photo upload -->
-  {#if id}
-    <ImageUpload
-      label="Player Photo"
-      storagePath={`players/${id}/photo`}
-      currentUrl={photoUrl}
-      onUpload={handlePhotoUpload}
+  <div class="space-y-2">
+    <span class="text-eyebrow block">Player Photo</span>
+    <input
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      onchange={handlePhotoSelect}
+      class="block w-full cursor-pointer rounded-lg border border-white/20 bg-navy-800/60 text-sm text-white/80 file:mr-4 file:cursor-pointer file:border-0 file:bg-blue-500 file:px-4 file:py-2 file:text-sm file:font-bold file:uppercase file:tracking-wider file:text-navy-950 hover:file:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-navy-900"
     />
-  {:else}
-    <div class="space-y-2">
-      <span class="text-eyebrow block">Player Photo</span>
-      <input
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        onchange={handlePhotoSelect}
-        class="block w-full cursor-pointer rounded-lg border border-white/20 bg-navy-800/60 text-sm text-white/80 file:mr-4 file:cursor-pointer file:border-0 file:bg-blue-500 file:px-4 file:py-2 file:text-sm file:font-bold file:uppercase file:tracking-wider file:text-navy-950 hover:file:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-navy-900"
-      />
-      <p class="text-xs text-white/50">The photo will be uploaded after the player is created.</p>
-      {#if photoError}
-        <p class="text-sm text-red-400" role="alert">{photoError}</p>
-      {/if}
-    </div>
-  {/if}
+    <p class="text-xs text-white/50">JPEG, PNG, or WebP up to 700KB. Photos are stored directly in the player record.</p>
+    {#if photoBase64 || photoUrl}
+      <p class="text-xs text-green-400">Player photo saved.</p>
+    {/if}
+    {#if photoError}
+      <p class="text-sm text-red-400" role="alert">{photoError}</p>
+    {/if}
+  </div>
 
   <div class="flex justify-end gap-3">
     <a href="/admin/players" class="btn-outline">Cancel</a>

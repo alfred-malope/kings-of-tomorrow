@@ -51,8 +51,6 @@
     { label: 'News', href: '/admin/news', icon: icons.news },
     { label: 'Gallery', href: '/admin/gallery', icon: icons.gallery },
     { label: 'Tournaments', href: '/admin/tournaments', icon: icons.tournaments },
-    { label: 'Members', href: '/admin/members', icon: icons.members },
-    { label: 'Settings', href: '/admin/settings', icon: icons.settings, adminOnly: true },
     { label: 'User Management', href: '/admin/users', icon: icons.users, adminOnly: true }
   ];
 

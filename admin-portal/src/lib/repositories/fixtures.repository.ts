@@ -29,8 +29,7 @@ export const MAX_PAGE_SIZE = 20;
 /**
  * Optional filters for {@link getFixtures}.
  *
- * `status` is applied server-side via a Firestore `where` constraint, backed
- * by the composite index `fixtures(status ASC, date ASC)`. This maps to the
+ * `status` is applied server-side via a Firestore `where` constraint. This maps to the
  * tabbed views on the Fixtures page (Upcoming, Completed, TBC, Cancelled, All)
  * where each tab queries by its corresponding `status` (Req 7.1, 7.2).
  */
@@ -65,9 +64,9 @@ export function applyClientFilters(fixtures: Fixture[], filters: FixtureFilters 
 /**
  * Fetches a page of fixtures.
  *
- * Builds a Firestore query applying the optional `status` filter (via `where`),
- * ordered by `date` ascending (Req 7.2), backed by the composite index
- * `fixtures(status ASC, date ASC)`. At most `pageSize` fixtures are returned,
+ * Builds a Firestore query applying the optional `status` filter (via `where`).
+ * The returned page is sorted by `date` descending locally so filtered tabs do
+ * not depend on a composite Firestore index. At most `pageSize` fixtures are returned,
  * capped at {@link MAX_PAGE_SIZE} (Req 7.8).
  *
  * @returns the matching fixtures plus the cursor (`lastDoc`) for the next page,
@@ -85,14 +84,18 @@ export async function getFixtures(
     if (filters.status !== undefined) {
       constraints.push(where('status', '==', filters.status));
     }
-    constraints.push(orderBy('date', 'asc'));
+    if (filters.status === undefined) {
+      constraints.push(orderBy('date', 'desc'));
+    }
     if (lastDoc) {
       constraints.push(startAfter(lastDoc));
     }
     constraints.push(limit(cappedSize));
 
     const snapshot = await getDocs(query(collection(db, COLLECTION), ...constraints));
-    const fixtures = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }) as Fixture);
+    const fixtures = snapshot.docs
+      .map((d) => ({ id: d.id, ...d.data() }) as Fixture)
+      .sort((left, right) => right.date.localeCompare(left.date));
 
     const filtered = applyClientFilters(fixtures, filters);
     const newLastDoc = snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1] : null;

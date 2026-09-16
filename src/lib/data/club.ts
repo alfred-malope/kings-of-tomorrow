@@ -30,7 +30,7 @@ export const club: Club = {
   logo: '/kot-logo.png',
   monogram: '/kot-monogram.svg',
   location: 'South Africa',
-  email: 'info@kotfc.co.za',
+  email: 'info@kingsoftomorrowfc.co.za',
   phone: '+27 82 436 8202',
   venue: 'K.O.T Stadium',
   colors: {

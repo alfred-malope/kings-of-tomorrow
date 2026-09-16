@@ -1,8 +1,7 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import { db } from '$lib/firebase/client';
-  import { createPlayer, updatePlayer } from '$lib/repositories/players.repository';
-  import { uploadImage } from '$lib/firebase/storage';
+  import { createPlayer } from '$lib/repositories/players.repository';
   import { toastStore } from '$lib/stores/toast.store.svelte';
   import PlayerForm, { type PlayerFormValues } from '$lib/components/forms/PlayerForm.svelte';
 
@@ -21,11 +20,20 @@
   // Photo selected before the player exists — uploaded after create.
   let pendingPhoto = $state<File | null>(null);
 
+  function fileToDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error('Unable to read photo'));
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function handleSubmit(values: PlayerFormValues): Promise<void> {
     if (submitting) return;
     submitting = true;
     try {
-      const id = await createPlayer(db, {
+      await createPlayer(db, {
         firstName: values.firstName,
         lastName: values.lastName,
         displayName: values.displayName,
@@ -34,14 +42,9 @@
         status: values.status,
         bio: values.bio,
         joinedDate: values.joinedDate,
-        photoUrl: values.photoUrl ?? null
+        photoUrl: values.photoUrl ?? null,
+        photoBase64: pendingPhoto ? await fileToDataUrl(pendingPhoto) : null
       });
-
-      // If a photo was chosen, upload it now that we have the player id (Req 6.6).
-      if (pendingPhoto) {
-        const url = await uploadImage(`players/${id}/photo`, pendingPhoto);
-        await updatePlayer(db, id, { photoUrl: url });
-      }
 
       toastStore.success('Player created.');
       await goto('/admin/players');

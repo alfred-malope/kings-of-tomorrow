@@ -5,11 +5,18 @@
   import Badge from '../lib/components/ui/Badge.svelte';
   import { reveal } from '../lib/actions/reveal';
   import { club } from '../lib/data/club';
-  import { players, positionGroups } from '../lib/data/players';
+  import { loadPublicPlayers, positionGroups } from '../lib/data/players';
   import type { Player, Position } from '../lib/data/players';
 
   let activeFilter: Position | 'All' = 'All';
   let selectedPlayer: Player | null = null;
+  let players: Player[] = [];
+  let loading = true;
+
+  loadPublicPlayers()
+    .then((loadedPlayers) => { players = loadedPlayers; })
+    .catch(() => {})
+    .finally(() => { loading = false; });
 
   $: filteredPlayers = activeFilter === 'All'
     ? players
@@ -66,7 +73,11 @@
     </div>
 
     <!-- Grid -->
-    {#if filteredPlayers.length > 0}
+    {#if loading}
+      <div class="card-surface p-12 text-center">
+        <p class="heading-display text-lg text-white/70 mb-2">Loading Squad</p>
+      </div>
+    {:else if filteredPlayers.length > 0}
       <div id="squad-player-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6" role="tabpanel" tabindex="0">
         {#each filteredPlayers as player (player.id)}
           <div use:reveal>

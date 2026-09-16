@@ -79,9 +79,10 @@ export function buildNewsConstraints(filters: NewsFilters = {}): QueryConstraint
 /**
  * Fetches a page of news articles.
  *
- * Applies optional `status` and `category` filters (via `where`), ordered by
- * `createdAt` descending (Req 9.9) so the most recently created articles
- * appear first. At most `pageSize` articles are returned, capped at
+ * Applies optional `status` and `category` filters (via `where`). Filtered
+ * queries are sorted locally so dashboard filters do not depend on a composite
+ * Firestore index. Unfiltered results use server-side `createdAt` ordering.
+ * At most `pageSize` articles are returned, capped at
  * {@link MAX_PAGE_SIZE} (Req 9.9).
  *
  * @returns the matching articles plus the cursor (`lastDoc`) for the next
@@ -96,14 +97,18 @@ export async function getNews(
   const cappedSize = Math.min(pageSize, MAX_PAGE_SIZE);
   try {
     const constraints: QueryConstraint[] = buildNewsConstraints(filters);
-    constraints.push(orderBy('createdAt', 'desc'));
+    if (filters.status === undefined && filters.category === undefined) {
+      constraints.push(orderBy('createdAt', 'desc'));
+    }
     if (lastDoc) {
       constraints.push(startAfter(lastDoc));
     }
     constraints.push(limit(cappedSize));
 
     const snapshot = await getDocs(query(collection(db, COLLECTION), ...constraints));
-    const articles = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }) as NewsArticle);
+    const articles = snapshot.docs
+      .map((d) => ({ id: d.id, ...d.data() }) as NewsArticle)
+      .sort((left, right) => timestampValue(right.createdAt) - timestampValue(left.createdAt));
 
     const newLastDoc = snapshot.docs.length > 0 ? snapshot.docs[snapshot.docs.length - 1] : null;
 
@@ -111,6 +116,14 @@ export async function getNews(
   } catch (err) {
     throw new RepositoryError('Failed to load news articles', err, 'read');
   }
+}
+
+function timestampValue(value: unknown): number {
+  if (value && typeof value === 'object' && 'toMillis' in value) {
+    return (value as { toMillis: () => number }).toMillis();
+  }
+  if (value instanceof Date) return value.getTime();
+  return 0;
 }
 
 /**

@@ -4,7 +4,6 @@
   import { page } from '$app/stores';
   import { db } from '$lib/firebase/client';
   import { getPlayer, updatePlayer, deletePlayer } from '$lib/repositories/players.repository';
-  import { deleteImage } from '$lib/firebase/storage';
   import { toastStore } from '$lib/stores/toast.store.svelte';
   import { authStore } from '$lib/stores/auth.store.svelte';
   import type { Player } from '$lib/types/firestore.types';
@@ -37,6 +36,16 @@
   let submitting = $state(false);
   let deleting = $state(false);
   let showConfirm = $state(false);
+  let pendingPhoto = $state<File | null>(null);
+
+  function fileToDataUrl(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result));
+      reader.onerror = () => reject(new Error('Unable to read photo'));
+      reader.readAsDataURL(file);
+    });
+  }
 
   async function load(): Promise<void> {
     loading = true;
@@ -79,7 +88,10 @@
         status: values.status,
         bio: values.bio,
         joinedDate: values.joinedDate,
-        photoUrl: values.photoUrl ?? null
+        photoUrl: values.photoUrl ?? null,
+        photoBase64: pendingPhoto
+          ? await fileToDataUrl(pendingPhoto)
+          : player?.photoBase64 ?? null
       });
       toastStore.success('Player updated.');
       await goto('/admin/players');
@@ -90,36 +102,13 @@
     }
   }
 
-  /** When a photo finishes uploading in edit mode, persist the URL immediately. */
-  async function handlePhotoUpload(url: string): Promise<void> {
-    try {
-      await updatePlayer(db, playerId, { photoUrl: url });
-      if (player) player = { ...player, photoUrl: url };
-      toastStore.success('Photo saved.');
-    } catch {
-      toastStore.error('Failed to save photo. Please try again.');
-    }
-  }
-
   async function confirmDelete(): Promise<void> {
     showConfirm = false;
     if (deleting) return;
     deleting = true;
-    const hadPhoto = Boolean(player?.photoUrl);
     try {
       // Delete the document first (Req 6.9).
       await deletePlayer(db, playerId);
-      // Then attempt to delete the Storage photo. A failure here must NOT
-      // restore the document — we only surface an error toast (Req 6.9).
-      if (hadPhoto) {
-        try {
-          await deleteImage(`players/${playerId}/photo`);
-        } catch {
-          toastStore.error('Player deleted, but its photo could not be removed from storage.');
-          await goto('/admin/players');
-          return;
-        }
-      }
       toastStore.success('Player deleted.');
       await goto('/admin/players');
     } catch {
@@ -161,7 +150,7 @@
       initial={player}
       {submitting}
       onSubmit={handleSubmit}
-      onPhotoUpload={(url) => void handlePhotoUpload(url)}
+      onPhotoSelect={(file) => (pendingPhoto = file)}
       submitLabel="Save Changes"
     />
   {:else if player}

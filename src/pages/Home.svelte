@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import Hero from '../lib/components/hero/Hero.svelte';
   import NextMatch from '../lib/components/matches/NextMatch.svelte';
   import ResultCard from '../lib/components/matches/ResultCard.svelte';
@@ -10,26 +11,83 @@
   import Badge from '../lib/components/ui/Badge.svelte';
   import SEO from '../lib/components/seo/SEO.svelte';
   import { reveal } from '../lib/actions/reveal';
-  import { club, clubStats } from '../lib/data/club';
-  import { getNextFixture, getLatestResult, getUpcomingFixtures } from '../lib/data/fixtures';
-  import { players } from '../lib/data/players';
-  import { news } from '../lib/data/news';
-  import { galleryAlbums } from '../lib/gallery';
+  import { club } from '../lib/data/club';
+  import { fixtures as fallbackFixtures, loadPublicFixtures, type Fixture } from '../lib/data/fixtures';
+  import { loadPublicPlayers, type Player } from '../lib/data/players';
+  import { loadPublicNews, news as fallbackNews, type NewsArticle } from '../lib/data/news';
+  import { galleryAlbums as fallbackAlbums } from '../lib/gallery';
+  import type { GalleryAlbum } from '../lib/gallery/types';
   import { router } from '../lib/router';
 
-  const nextFixture = getNextFixture();
-  const latestResult = getLatestResult();
-  const featuredPlayers = players.slice(0, 4);
-  const latestNews = news.slice(0, 3);
-  const previewAlbums = galleryAlbums.slice(0, 3);
+  let fixtures: Fixture[] = fallbackFixtures;
+  let featuredPlayers: Player[] = [];
+  let latestNews: NewsArticle[] = fallbackNews.slice(0, 3);
+  let galleryAlbums: GalleryAlbum[] = fallbackAlbums;
+  let nextFixture: Fixture | undefined = getNextFixture(fallbackFixtures);
+  let latestResult: Fixture | undefined = getLatestResult(fallbackFixtures);
+  let stats = buildStats(fallbackFixtures);
 
-  const stats = [
-    { label: 'Matches', value: clubStats.matches, accent: 'blue' },
-    { label: 'Wins', value: clubStats.wins, accent: 'gold' },
-    { label: 'Draws', value: clubStats.draws, accent: 'silver' },
-    { label: 'Losses', value: clubStats.losses, accent: 'white' },
-    { label: 'Goals', value: clubStats.goals, accent: 'blue' },
-  ];
+  $: previewAlbums = galleryAlbums.slice(0, 3);
+
+  function getNextFixture(items: Fixture[]): Fixture | undefined {
+    return items
+      .filter((fixture) => fixture.status === 'upcoming')
+      .sort((left, right) => {
+        if (left.date === 'TBC') return 1;
+        if (right.date === 'TBC') return -1;
+        return left.date.localeCompare(right.date);
+      })[0];
+  }
+
+  function getLatestResult(items: Fixture[]): Fixture | undefined {
+    return items
+      .filter((fixture) => fixture.status === 'result')
+      .sort((left, right) => right.date.localeCompare(left.date))[0];
+  }
+
+  function buildStats(items: Fixture[]) {
+    const results = items.filter(
+      (fixture) => fixture.status === 'result' && fixture.homeScore !== undefined && fixture.awayScore !== undefined
+    );
+    let wins = 0;
+    let draws = 0;
+    let losses = 0;
+    let goals = 0;
+
+    for (const result of results) {
+      const kotScore = result.isHome ? result.homeScore! : result.awayScore!;
+      const opponentScore = result.isHome ? result.awayScore! : result.homeScore!;
+      goals += kotScore;
+      if (kotScore > opponentScore) wins += 1;
+      else if (kotScore === opponentScore) draws += 1;
+      else losses += 1;
+    }
+
+    return [
+      { label: 'Matches', value: results.length, accent: 'blue' },
+      { label: 'Wins', value: wins, accent: 'gold' },
+      { label: 'Draws', value: draws, accent: 'silver' },
+      { label: 'Losses', value: losses, accent: 'white' },
+      { label: 'Goals', value: goals, accent: 'blue' },
+    ];
+  }
+
+  onMount(async () => {
+    const [fixturesResult, playersResult, newsResult] = await Promise.allSettled([
+      loadPublicFixtures(),
+      loadPublicPlayers(),
+      loadPublicNews(),
+    ]);
+
+    if (fixturesResult.status === 'fulfilled') {
+      fixtures = fixturesResult.value;
+      nextFixture = getNextFixture(fixtures);
+      latestResult = getLatestResult(fixtures);
+      stats = buildStats(fixtures);
+    }
+    if (playersResult.status === 'fulfilled') featuredPlayers = playersResult.value.slice(0, 4);
+    if (newsResult.status === 'fulfilled') latestNews = newsResult.value.slice(0, 3);
+  });
 
   function navigate(path: string) {
     router.navigate(path);

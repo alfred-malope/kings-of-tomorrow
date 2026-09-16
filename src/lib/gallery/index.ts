@@ -11,6 +11,8 @@
  */
 import { formatCategoryTitle } from './formatTitle';
 import type { GalleryAlbum, GalleryImage } from './types';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { firestore } from '../firebase';
 
 // Eagerly import all gallery images so we can enumerate folders and files at build time.
 // `eager: true` returns the resolved modules (with default export = URL string) synchronously.
@@ -90,4 +92,32 @@ export function getAlbum(slug: string): GalleryAlbum | undefined {
 
 export function getAlbumCount(): number {
   return galleryAlbums.length;
+}
+
+/** Loads public gallery albums and their photos from the admin portal. */
+export async function loadPublicAlbums(): Promise<GalleryAlbum[]> {
+  const albumSnapshot = await getDocs(query(collection(firestore, 'gallery'), where('visibility', '==', 'public')));
+  const albums = await Promise.all(albumSnapshot.docs.map(async (albumDoc) => {
+    const album = albumDoc.data();
+    const photoSnapshot = await getDocs(collection(firestore, 'gallery', albumDoc.id, 'photos'));
+    const images: GalleryImage[] = photoSnapshot.docs.map((photoDoc) => {
+      const photo = photoDoc.data();
+      return {
+        src: photo.downloadUrl as string,
+        alt: (photo.caption as string) || (photo.fileName as string) || String(album.name),
+        width: 1200,
+        height: 800,
+      };
+    });
+
+    return {
+      slug: (album.slug as string) || albumDoc.id,
+      title: (album.name as string) || formatCategoryTitle(albumDoc.id),
+      cover: (album.coverImageUrl as string) || images[0]?.src || '',
+      count: images.length,
+      images,
+    };
+  }));
+
+  return albums.filter((album) => album.images.length > 0);
 }
