@@ -12,7 +12,10 @@ const GENERIC_AUTH_ERROR = 'An unexpected error occurred. Please try again.';
 export function mapAuthError(code: string): string {
   const map: Record<string, string> = {
     'auth/invalid-credential': 'Invalid email or password.',
+    'auth/invalid-email': 'Please enter a valid email address.',
+    'auth/missing-email': 'Please enter your email address.',
     'auth/user-disabled': 'This account has been disabled.',
+    'auth/user-not-found': 'No account was found for that email.',
     'auth/too-many-requests': 'Too many attempts. Please try again later.',
     'auth/network-request-failed': 'Network error. Check your connection.',
     'auth/wrong-password': 'Current password is incorrect.',

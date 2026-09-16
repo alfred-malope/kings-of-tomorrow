@@ -18,6 +18,16 @@ describe('mapAuthError', () => {
     );
   });
 
+  it('maps auth/user-not-found for password reset', () => {
+    expect(mapAuthError('auth/user-not-found')).toBe(
+      'No account was found for that email.'
+    );
+  });
+
+  it('maps auth/invalid-email for password reset', () => {
+    expect(mapAuthError('auth/invalid-email')).toBe('Please enter a valid email address.');
+  });
+
   it('maps auth/network-request-failed', () => {
     expect(mapAuthError('auth/network-request-failed')).toBe(
       'Network error. Check your connection.'

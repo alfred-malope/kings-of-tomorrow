@@ -123,10 +123,37 @@
           <span>Sign in</span>
         {/if}
       </button>
-    </form>
-  </div>
 
-  <p class="mt-8 text-center text-[0.65rem] font-medium tracking-wide text-white/25">
-    Developed by <a href="https://365itconsultants.co.za" target="_blank" rel="noopener noreferrer" class="text-white/40 transition-colors hover:text-blue-400">365 IT Consultants</a>
-  </p>
+      <div class="flex items-center justify-end">
+        <a href="/forgot-password" class="text-sm font-medium text-blue-300 transition-colors hover:text-blue-200">
+          Forgot password?
+        </a>
+      </div>
+    </form>
+
+    <!-- Developer credit -->
+    <div class="mt-8 flex items-center gap-3">
+      <div class="h-px flex-1 bg-white/10"></div>
+      <p class="text-[0.62rem] font-semibold uppercase tracking-[0.18em] text-white/30">
+        Developed by
+      </p>
+      <div class="h-px flex-1 bg-white/10"></div>
+    </div>
+    <div class="mt-3 flex justify-center">
+      <a
+        href="https://365itconsultants.co.za"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group flex items-center gap-2 rounded-lg px-3 py-1.5 transition-colors hover:bg-white/5"
+      >
+        <span class="text-sm font-bold tracking-wide text-white/50 transition-colors group-hover:text-blue-400">
+          365 IT Consultants
+        </span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-3.5 w-3.5 text-white/30 transition-colors group-hover:text-blue-400" aria-hidden="true">
+          <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h5a.75.75 0 010 1.5h-5z" clip-rule="evenodd" />
+          <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 001.06.053L16.5 4.44v2.81a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.553l-9.056 8.194a.75.75 0 00-.053 1.06z" clip-rule="evenodd" />
+        </svg>
+      </a>
+    </div>
+  </div>
 </main>
