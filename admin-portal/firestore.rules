@@ -1,0 +1,72 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    function getRole() {
+      return request.auth.token.role;
+    }
+    function isAdmin() {
+      return isAuthenticated() && getRole() == 'admin';
+    }
+    function isAdminOrEditor() {
+      return isAuthenticated() && getRole() in ['admin', 'editor'];
+    }
+    function isAnyValidRole() {
+      return isAuthenticated() && getRole() in ['admin', 'editor', 'viewer'];
+    }
+
+    // ── Public content collections ────────────────────────────────────────────
+    // players, fixtures, results, news, gallery, tournaments
+    // Read: any valid role
+    // Write: admin or editor
+
+    match /players/{docId} {
+      allow read: if isAnyValidRole();
+      allow write: if isAdminOrEditor();
+    }
+    match /fixtures/{docId} {
+      allow read: if isAnyValidRole();
+      allow write: if isAdminOrEditor();
+    }
+    match /results/{docId} {
+      allow read: if isAnyValidRole();
+      allow write: if isAdminOrEditor();
+    }
+    match /news/{docId} {
+      allow read: if isAnyValidRole();
+      allow write: if isAdminOrEditor();
+    }
+    match /gallery/{albumId} {
+      allow read: if isAnyValidRole();
+      allow write: if isAdminOrEditor();
+
+      match /photos/{photoId} {
+        allow read: if isAnyValidRole();
+        allow write: if isAdminOrEditor();
+      }
+    }
+    match /tournaments/{docId} {
+      allow read: if isAnyValidRole();
+      allow write: if isAdminOrEditor();
+    }
+
+    // ── Members: no public access, admin+editor only ──────────────────────────
+    match /members/{docId} {
+      allow read, write: if isAdminOrEditor();
+    }
+
+    // ── Settings: admin only ──────────────────────────────────────────────────
+    match /settings/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ── Users: admin only ─────────────────────────────────────────────────────
+    match /users/{uid} {
+      allow read, write: if isAdmin();
+    }
+  }
+}
